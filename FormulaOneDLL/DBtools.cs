@@ -11,184 +11,314 @@ namespace FormulaOneDLL
 {
     public class DBtools
     {
-        public DBtools() { }
+        public const string WORKINGPATH = @"F:\data\formulaOne\";
+        private const string CONNECTION_STRING = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFileName=" + WORKINGPATH + @"FormulaOne.mdf;Integrated Security=True";
 
-        public const string QUERYPATH = @"E:\data\formulaOne\query\";
-        public const string DBPATH = @"E:\data\formulaOne\";
-        public const string CONNECTION_STRING = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename="+ DBPATH + "FormulaOne.mdf;Integrated Security=True";
-        //private static string RESTORE_CONNECTION_STRING = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=" + DBPATH + @"FormulaOne.bak; Integrated Security=True";
+        public DataTable GetData(string table)
+        {
+            DataTable retVal = new DataTable();
+            SqlConnection con = new SqlConnection(CONNECTION_STRING);
+            string sql = "SELECT * FROM " + table + ";";
+            SqlCommand cmd = new SqlCommand(sql, con);
+            con.Open();
+
+            // create data adapter
+            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            // this will query your database and return the result to your datatable
+            da.Fill(retVal);
+            con.Close();
+            da.Dispose();
+            return retVal;
+        }
+
+        public List<Driver> getListDriver()
+        {
+            List<Driver> retVal = new List<Driver>();
+            using (SqlConnection dbConn = new SqlConnection())
+            {
+                dbConn.ConnectionString = CONNECTION_STRING;
+                dbConn.Open();
+                string sql = "SELECT * FROM Driver;";
+                SqlCommand cmd = new SqlCommand(sql, dbConn);
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int id = reader.GetInt32(0);
+                    int number = reader.GetInt32(1);
+                    string name = reader.GetString(2);
+                    DateTime dob = reader.GetDateTime(3);
+                    byte[] helmetImage = reader["HelmetImage"] as byte[];
+                    byte[] Image = reader["Image"] as byte[];
+                    int teamID = reader.GetInt32(6);
+                    int Podiums = reader.GetInt32(7);
+                    string country = reader.GetString(8);
+                    Driver t = new Driver(id, number, name, dob, helmetImage, Image, teamID, Podiums, country);
+                    retVal.Add(t);
+                }
+            }
+            return retVal;
+        }
+        public Driver getDriverById(int id)
+        {
+            Driver retVal = null;
+            using (SqlConnection dbConn = new SqlConnection())
+            {
+                dbConn.ConnectionString = CONNECTION_STRING;
+                dbConn.Open();
+                string sql =  $"SELECT * FROM Driver WHERE id={id};";
+                SqlCommand cmd = new SqlCommand(sql, dbConn);
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int ID = reader.GetInt32(0);
+                    int number = reader.GetInt32(1);
+                    string name = reader.GetString(2);
+                    DateTime dob = reader.GetDateTime(3);
+                    byte[] helmetImage = reader["HelmetImage"] as byte[];
+                    byte[] Image = reader["Image"] as byte[];
+                    int teamID = reader.GetInt32(6);
+                    int Podiums = reader.GetInt32(7);
+                    string country = reader.GetString(8);
+                    Driver t = new Driver(ID, number, name, dob, helmetImage, Image, teamID, Podiums, country);
+                    retVal = t;
+                }
+            }
+            return retVal;
+        }
+
+        public List<Country> GetListCountry()
+        {
+            List<Country> retVal = new List<Country>();
+            using (SqlConnection dbConn = new SqlConnection())
+            {
+                dbConn.ConnectionString = CONNECTION_STRING;
+                dbConn.Open();
+                string sql = "SELECT * FROM Country;";
+                SqlCommand cmd = new SqlCommand(sql, dbConn);
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    string countryCode = reader.GetString(0);
+                    string countryName = reader.GetString(1);
+                    Country c = new Country(countryCode, countryName);
+                    retVal.Add(c);
+                }
+            }
+            return retVal;
+        }
+        public Country GetCountryById(string id)
+        {
+            Country retVal = null;
+            using (SqlConnection dbConn = new SqlConnection())
+            {
+                dbConn.ConnectionString = CONNECTION_STRING;
+                dbConn.Open();
+                string sql = $"SELECT * FROM Country WHERE countryCode='{id}';";
+                SqlCommand cmd = new SqlCommand(sql, dbConn);
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    string countryCode = reader.GetString(0);
+                    string countryName = reader.GetString(1);
+                    Country c = new Country(countryCode, countryName);
+                    retVal = c;
+                }
+            }
+            return retVal;
+        }
+
+        public Team GetTeamById(int id)
+        {
+            Team retVal = null;
+            using (SqlConnection dbConn = new SqlConnection())
+            {
+                dbConn.ConnectionString = CONNECTION_STRING;
+                dbConn.Open();
+                string sql = $"SELECT * FROM Team WHERE ID='{id}';";
+                SqlCommand cmd = new SqlCommand(sql, dbConn);
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int ID = reader.GetInt32(0);
+                    string teamName = reader.GetString(1);
+                    byte[] teamLogo = reader["teamLogo"] as byte[];
+                    string @base = reader.GetString(3);
+                    string teamChief = reader.GetString(4);
+                    string technicalChief = reader.GetString(5);
+                    string powerUnit = reader.GetString(6);
+                    byte[] carImage = reader["carImage"] as byte[];
+                    string country = reader.GetString(8);
+                    int worldChampionships = reader.GetInt32(9);
+                    int polePositions = reader.GetInt32(10);
+                    Team t = new Team(ID, teamName, teamLogo, @base, teamChief, technicalChief, powerUnit, carImage, country, worldChampionships, polePositions);
+                    retVal= t;
+                }
+            }
+            return retVal;
+        }
+
+        public List<Team> GetListTeam()
+        {
+            List<Team> retVal = new List<Team>();
+            using (SqlConnection dbConn = new SqlConnection())
+            {
+                dbConn.ConnectionString = CONNECTION_STRING;
+                dbConn.Open();
+                string sql = "SELECT * FROM Team;";
+                SqlCommand cmd = new SqlCommand(sql, dbConn);
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int id = reader.GetInt32(0);
+                    string teamName = reader.GetString(1);
+                    byte[] teamLogo = reader["teamLogo"] as byte[];
+                    string @base = reader.GetString(3);
+                    string teamChief = reader.GetString(4);
+                    string technicalChief = reader.GetString(5);
+                    string powerUnit = reader.GetString(6);
+                    byte[] carImage = reader["carImage"] as byte[];
+                    string country = reader.GetString(8);
+                    int worldChampionships = reader.GetInt32(9);
+                    int polePositions = reader.GetInt32(10);
+                    Team t = new Team(id, teamName, teamLogo, @base, teamChief, technicalChief, powerUnit, carImage, country, worldChampionships, polePositions);
+                    retVal.Add(t);
+                }
+            }
+            return retVal;
+        }
+
+        //public List<Driver> GetListDriver()
+        //{
+        //    List<Driver> retVal = new List<Driver>();
+        //    using (SqlConnection dbConn = new SqlConnection())
+        //    {
+        //        dbConn.ConnectionString = CONNECTION_STRING;
+        //        dbConn.Open();
+        //        string sql = "SELECT * FROM Driver;";
+        //        SqlCommand cmd = new SqlCommand(sql, dbConn);
+
+        //        SqlDataReader reader = cmd.ExecuteReader();
+
+        //        while (reader.Read())
+        //        {
+        //            int id = reader.GetInt32(0);
+        //            int number = reader.GetInt32(1);
+        //            string name = reader.GetString(2);
+        //            DateTime dob = reader.GetDateTime(3);
+        //            string pob = reader.GetString(4);
+        //            byte[] helmetImg = reader["helmetImg"] as byte[];
+        //            byte[] img = reader["img"] as byte[];
+        //            int teamId = reader.GetInt32(7);
+        //            int podiums = reader.GetInt32(8);
+        //            string countryCode = reader.GetString(9);
+        //            Driver d = new Driver(id, number, name, dob, pob, helmetImg, img, teamId, podiums, countryCode);
+        //            retVal.Add(d);
+        //        }
+        //    }
+        //    return retVal;
+        //}
+
+
+
+        public static List<string> getTables()
+        {
+            DataTable retVal = new DataTable();
+            SqlConnection con = new SqlConnection(CONNECTION_STRING);
+            string sql = "SELECT * FROM INFORMATION_SCHEMA.TABLES";
+            SqlCommand cmd = new SqlCommand(sql, con);
+            con.Open();
+
+            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            da.Fill(retVal);
+            List<string> ts = new List<string>();
+            ts.Add("--- Selezionare la tabella desiderata ---");
+            foreach (DataRow item in retVal.Rows)
+            {
+                ts.Add((item["TABLE_NAME"].ToString()));
+            }
+            return ts;
+        }
 
         public void ExecuteSqlScript(string sqlScriptName)
         {
-            var fileContent = File.ReadAllText(QUERYPATH + sqlScriptName);
-            fileContent = fileContent.Replace("\r\n", "");
+            var fileContent = File.ReadAllText(WORKINGPATH + sqlScriptName);
             fileContent = fileContent.Replace("\r", "");
             fileContent = fileContent.Replace("\n", "");
             fileContent = fileContent.Replace("\t", "");
             var sqlqueries = fileContent.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
 
-            var con = new SqlConnection(CONNECTION_STRING);
-            var cmd = new SqlCommand("query", con);
-            con.Open(); int i = 0;
-            foreach (var query in sqlqueries)
-            {
-                cmd.CommandText = query; i++;
-                try
-                {
-                    cmd.ExecuteNonQuery();
-                    Console.ForegroundColor = ConsoleColor.Green;
-                }
-                catch (SqlException err)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Errore in esecuzione della query numero: " + i);
-                    Console.WriteLine("\tErrore SQL: " + err.Number + " - " + err.Message);
-                }
-            }
-            con.Close();
-        }
-        public void DropTable(string tableName)
-        {
-            var con = new SqlConnection(CONNECTION_STRING);
-            var cmd = new SqlCommand("Drop Table " + tableName + ";", con);
-            con.Open();
-            try
-            {
-                cmd.ExecuteNonQuery();
-                Console.ForegroundColor = ConsoleColor.Green;
-            }
-            catch (SqlException err)
-            {
-                Console.ForegroundColor = ConsoleColor.Red; 
-                Console.WriteLine("\tErrore SQL: " + err.Number + " - " + err.Message);
-            }
-            con.Close();
-        }
-        public void DBBackup()
-        {
-            try
-            {
-                using (SqlConnection dbConn = new SqlConnection())
-                {
-                    dbConn.ConnectionString = CONNECTION_STRING;
-                    dbConn.Open();
+            SqlConnection con = new SqlConnection(CONNECTION_STRING);
 
-                    using (SqlCommand multiuser_rollback_dbcomm = new SqlCommand())
+            using (con)
+            {
+                SqlCommand cmd = new SqlCommand("query", con);
+                con.Open();
+                int i = 0;
+                int nErr = 0;
+                foreach (var query in sqlqueries)
+                {
+                    cmd.CommandText = query;
+                    i++;
+                    try
                     {
-                        multiuser_rollback_dbcomm.Connection = dbConn;
-                        multiuser_rollback_dbcomm.CommandText = @"ALTER DATABASE [" + DBPATH + "FormulaOne.mdf] SET MULTI_USER WITH ROLLBACK IMMEDIATE";
-
-                        multiuser_rollback_dbcomm.ExecuteNonQuery();
+                        cmd.ExecuteNonQuery();
                     }
-                    dbConn.Close();
-                }
-
-                SqlConnection.ClearAllPools();
-
-                using (SqlConnection backupConn = new SqlConnection())
-                {
-                    backupConn.ConnectionString = CONNECTION_STRING;
-                    backupConn.Open();
-
-                    using (SqlCommand backupcomm = new SqlCommand())
+                    catch (SqlException ex)
                     {
-                        File.Delete(DBPATH+ "FormulaOne_Backup.bak");
-                        backupcomm.Connection = backupConn;
-                        backupcomm.CommandText = @"BACKUP DATABASE [" + DBPATH + "FormulaOne.mdf] TO DISK='" + DBPATH + @"FormulaOne_Backup.bak'";
-                        backupcomm.ExecuteNonQuery();
-
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("Backup database Success");
-                    }
-                    backupConn.Close();
-                }
-            }
-
-            catch (Exception ex)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Backup database Failed");
-                Console.WriteLine(ex.Message);
-            }
-        }
-
-        public void DBRestore()
-        {
-            try
-            {
-                using (SqlConnection con = new SqlConnection(CONNECTION_STRING))
-                {
-                    con.Open();
-                    string sqlStmt2 = string.Format(@"ALTER DATABASE [" + DBPATH + "FormulaOne.mdf] SET SINGLE_USER WITH ROLLBACK IMMEDIATE");
-                    SqlCommand bu2 = new SqlCommand(sqlStmt2, con);
-                    bu2.ExecuteNonQuery();
-
-                    string sqlStmt3 = @"USE MASTER RESTORE DATABASE [" + DBPATH + "FormulaOne.mdf] FROM DISK='" + DBPATH + @"FormulaOne_Backup.bak' WITH REPLACE;";
-                    SqlCommand bu3 = new SqlCommand(sqlStmt3, con);
-                    bu3.ExecuteNonQuery();
-
-                    string sqlStmt4 = string.Format(@"ALTER DATABASE [" + DBPATH + "FormulaOne.mdf] SET MULTI_USER");
-                    SqlCommand bu4 = new SqlCommand(sqlStmt4, con);
-                    bu4.ExecuteNonQuery();
-
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("Restore database Success");
-                    con.Close();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Restore database Failed");
-                Console.WriteLine(ex.ToString());
-            }
-        }
-
-        public DataTable getTable(string tableName)
-        {
-            DataTable dt = new DataTable();
-            using (SqlConnection dbConn = new SqlConnection())
-            {
-                dbConn.ConnectionString = CONNECTION_STRING;
-                Console.WriteLine("\nQuery data example: ");
-                Console.WriteLine("\n=========================================\n");
-                String sql = $"SELECT * FROM {tableName}";
-                using (SqlCommand command = new SqlCommand(sql, dbConn))
-                {
-                    dbConn.Open();
-                    using (SqlDataAdapter da = new SqlDataAdapter(command))
-                    {
-                        da.Fill(dt);
+                        Console.WriteLine("Errore durante l'esecuzione della query " + i + "\n" + ex.Message);
+                        nErr++;
                     }
                 }
-            }
-            return dt;
-        }
-
-        public List<string> getTableName()
-        {
-            List<string> tableNames = new List<string>();
-            using (SqlConnection dbConn = new SqlConnection())
-            {
-                dbConn.ConnectionString = CONNECTION_STRING;
-                Console.WriteLine("\nQuery data example: ");
-                Console.WriteLine("\n=========================================\n");
-                String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES";
-                using (SqlCommand command = new SqlCommand(sql, dbConn))
+                if (nErr != 0)
                 {
-                    dbConn.Open();
-                    using (SqlDataReader dr = command.ExecuteReader())
-                    {
-                        while (dr.Read())
-                        {
-                            tableNames.Add(dr.GetString(0));
-                        }
-                    }
+                    Console.WriteLine("Si sono verificati " + nErr + " errori");
+                }
+                else
+                {
+                    Console.Write("Esecuzione effettuata correttamente\n");
                 }
             }
-            return tableNames;
         }
 
-        
+        public void ResetDB()
+        {
+            SqlConnection con = new SqlConnection(CONNECTION_STRING);
+            using (con)
+            {
+                string[] nomeTabella = { "Driver", "Country", "Team", "Race", "Circuit", "Result" };
+                con.Open();
+                for (int i = 0; i < nomeTabella.Length; i++)
+                {
+                    SqlCommand cmd = new SqlCommand("DROP TABLE IF EXISTS " + nomeTabella[i] + ";", con);
+                    try
+                    {
+                        cmd.ExecuteNonQuery();
+                        Console.WriteLine("Tabella " + nomeTabella[i] + " eliminata correttamente");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+                ExecuteSqlScript("Drivers.sql");
+                ExecuteSqlScript("Countries.sql");
+                ExecuteSqlScript("Teams.sql");
+                ExecuteSqlScript("Races.sql");
+                ExecuteSqlScript("Circuits.sql");
+                ExecuteSqlScript("Results.sql");
+            }
+        }
     }
 }
